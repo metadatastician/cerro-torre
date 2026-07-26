@@ -16,6 +16,9 @@ jobs:
     name: Sustainability Analysis
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
     container:
       image: ghcr.io/hyperpolymath/oikos:latest
     steps:
