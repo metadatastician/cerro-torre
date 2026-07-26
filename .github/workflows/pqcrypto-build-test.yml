@@ -33,6 +33,7 @@ on:
       - 'cerro_torre.gpr'
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
