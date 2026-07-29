@@ -1,3 +1,9 @@
+> [!WARNING]
+> **SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.**
+> See `STATUS.md` in this repo for measured state, and
+> `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
+> Falsified here: claims '40/41 PASS (97.6%)' — unreproducible; no test target is buildable and ct_test_parser.adb contains 0 assertions. Retained for history; do not cite.
+
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # End-to-End Test Results - Cerro Torre
 

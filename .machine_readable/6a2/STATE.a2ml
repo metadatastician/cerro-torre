@@ -1,52 +1,63 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
-# STATE.a2ml — Cerro Torre project state
+# STATE.a2ml — Cerro Torre project state (MEASURED, not self-reported)
 [metadata]
-project = "Cerro Torre"
-version = "2.1.0"
-last-updated = "2026-03-10T00:00:00+00:00"
+project = "cerro-torre"
+version = "0.1.0"
+last-updated = "2026-07-28"
 status = "active"
-session = "converted from scheme — 2026-04-11"
+session = "measured audit — 2026-07-28"
+measurement-method = "file reads, builds executed, tests run; see STATUS.md"
 
 [project-context]
 name = "Cerro Torre"
-purpose = """Ship containers safely - provenance-verified containers from democratically-governed sources"""
-completion-percentage = 68
+purpose = """SPARK/Ada supply-chain toolchain — packages container images into signed .ctp bundles with provenance"""
+completion-percentage = 35
+completion-basis = "measured 2026-07-28; supersedes earlier self-reported figure"
 
 [position]
-phase = "Phase 2: CLI Wiring & Integration - Debian importer complete, OCI exporter functional, transparency partial"   # design | implementation | testing | maintenance | archived
+phase = "implementation"   # design | implementation | testing | maintenance | archived
 maturity = "experimental"  # experimental | alpha | beta | production | lts
 
-[route-to-mvp]
-milestones = [
-  { name = "Cerro Torre", completion = 95 },
+[verified-working]
+items = [
+  """**23,607 lines of Ada across 59 files, and all 59 pass `gcc -gnats -gnat2022` syntax checking.** This is not scaffolding.""",
+  """Excellent Idris2 proofs: 7 files, 88 definitions, all typecheck, ZERO `believe_me`/`assert_total`/holes, with an explicit written HONESTY POLICY banning `cast Refl`""",
+  """**Owns two of the four genuinely enforced CI gates in the whole ecosystem**: `formal-verification.yml` (`idris2 --build` on an ipkg — the correct honest form) and `pqcrypto-build-test.yml` (builds liboqs from a resolved SHA, `set -euo pipefail`)""",
 ]
 
 [blockers-and-issues]
 issues = [
-  # No blockers recorded
+  """**The project cannot build.** `gprbuild -P cerro_torre.gpr` fails: `imported project file "config/cerro_torre_config.gpr" not found`. `config/` is gitignored (an alire convention — `alr` generates it), and `alr` is not installed. The linker also hard-requires `-loqs`, and liboqs is absent.""",
+  """**Provenance verification is `return True`.** `src/policy/cerro_policy_enforce.adb`: `Verify_Trust_Store` and `Verify_Policy` both `-- MVP stub: Return True`. `Check_Signatures` sets `Signatures_Required := 0` and returns Inconclusive; `Check_SBOM` returns `SBOM_Present := False`; `Check_Registry` returns `Registry_Allowed := True`. 17 TODOs in that one file. This is the repo's entire reason to exist.""",
+  """**`gnatprove` has never been run** — no `.spark` artifacts. Of 26 files with `pragma SPARK_Mode`, roughly 8 are `On` and 20 are `Off`, and the `Off`s are exactly the security-critical modules (registry, transparency, http, crypto, sbom).""",
+  """33 `Not_Implemented` and 80 `TODO` markers across the Ada.""",
+  """`src-rust/main.rs` (`cerro-sign`) fails `cargo check` — `E0277`, ed25519-dalek/rand version mismatch.""",
+  """`ffi/zig` fails to build on Zig 0.16 (same error as vordr).""",
+  """`ABI-FFI-README.md` is an unfilled template with 27 `{{...}}` placeholders, byte-identical to vordr's, and describes a directory layout this repo does not have.""",
+  """Two remotes with two identities: `hyperpolymath -> hyperpolymath/cerrotorre.git` is UNREACHABLE; `main` tracks `origin -> metadatastician/cerro-torre`.""",
+  """`alire.toml` carries placeholder identity: `maintainers = ["cerro-torre@example.org"]`, `website = "https://cerro-torre.org"`.""",
 ]
 
 [critical-next-actions]
 actions = [
-  "Wire ct sign and ct keygen to OpenSSL module",
-  "Test Debian importer against live mirrors",
-  "Fix Push_Blob_From_File digest computation",
-  "Implement Merkle inclusion proof verification",
-  "Submit test attestation to Rekor",
-  "Add unit tests for new components",
-  "Implement Attach_Provenance (SLSA)",
-  "Implement Attach_SBOM",
-  "Complete policy engine",
-  "Discharge SPARK proofs via GNATprove",
-  "Fix proven library",
-  "Enable ECH",
-  "Alpine/Fedora importers",
-  "OSTree exporter",
-  "Builder orchestration",
+  """URGENT: change Verify_Trust_Store and Verify_Policy from `return True` to `return False` (fail closed) until implemented""",
+  """Unblock the build: install alr (or vendor config/cerro_torre_config.gpr) and liboqs""",
+  """RULING NEEDED (R4): is SPARK the goal, or plain Ada + the (real) Idris2 proofs?""",
+  """Run gnatprove at least once, or remove 'formally verified' from the README""",
+  """Correct IMPLEMENTATION-STATUS.md and E2E-TEST-RESULTS.md — both claim passing states that do not exist""",
+  """Remove the unreachable `hyperpolymath` remote; fix alire.toml placeholder identity""",
 ]
 
+[ecosystem]
+stack = ["stapeln", "selur", "vordr", "rokur", "cerro-torre", "svalinn"]
+designer = "stapeln"
+canonical-contract = "container/stapeln/ — 8-file bundle, one file per satellite"
+contract-status = "NOT EMITTED BY STAPELN AND NOT CONSUMED BY ANY SATELLITE as of 2026-07-28"
+runtime-chain = "svalinn(443/80) -> rokur(8081) -> app; vordr watches; cerro-torre signs; selur is network driver"
+
 [maintenance-status]
-last-run-utc = "2026-03-10T00:00:00+00:00T00:00:00Z"
-last-result = "unknown"  # unknown | pass | warn | fail
+last-run-utc = "2026-07-28T00:00:00Z"
+last-result = "measured"  # unknown | pass | warn | fail | measured
+reference = "dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md"
