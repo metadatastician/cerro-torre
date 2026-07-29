@@ -47,6 +47,27 @@
 5. Correct IMPLEMENTATION-STATUS.md and E2E-TEST-RESULTS.md — both claim passing states that do not exist
 6. Remove the unreachable `hyperpolymath` remote; fix alire.toml placeholder identity
 
+## CI/CD status
+
+As of 2026-07-28, post-merge: **6/6 workflows parse clean**, with zero
+illegal `timeout-minutes` on reusable-call jobs and zero phantom `codeql-action` SHAs.
+(Three sweep-introduced fault classes were repaired and merged on this date — see the
+ecosystem sitrep for the taxonomy.)
+
+**Gates that genuinely enforce something:**
+
+- `formal-verification.yml` job `idris2-proofs` — `idris2 --build` on an ipkg, no swallowing. **The correct honest form.**
+- `pqcrypto-build-test.yml` — builds liboqs from a resolved SHA, `set -euo pipefail`, runs real tests
+
+**Gates that run but cannot fail (or check nothing):**
+
+- `codeql.yml` pinned to `language: actions` — and CodeQL supports no Ada at all, so it is doubly useless here
+- sibling job `spark-gnatprove` is `continue-on-error: true` with three `|| true` steps (at least it is labelled soft)
+- `formal-verification.yml` runs in `snazzybucket/idris2:latest` — a floating tag inside the one load-bearing proof gate
+
+> A gate is not done until it has been observed to **fail** on a deliberate defect.
+> Every fake gate listed above passed its own review.
+
 ## Ecosystem position
 
 This repo is part of the six-repo container stack designed by `stapeln`. The canonical
