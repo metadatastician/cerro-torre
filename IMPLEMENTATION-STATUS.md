@@ -1,3 +1,9 @@
+> [!WARNING]
+> **SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.**
+> See `STATUS.md` in this repo for measured state, and
+> `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
+> Falsified here: claims 'Build System OK Working 100%' and 'Build Status: PASSING' — the project does not build on a clean checkout (config/*.gpr gitignored, alr absent, liboqs absent). Retained for history; do not cite.
+
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Cerro Torre - Implementation Status
 
