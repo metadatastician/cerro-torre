@@ -9,7 +9,10 @@
 
 **Last Updated**: 2026-01-25
 **Version**: 0.2.0-dev
-**Build Status**: ✅ **PASSING** (40/41 tests, 97.6%)
+**Build Status**: ❌ **DOES NOT BUILD ON A CLEAN CHECKOUT** — `cerro_torre.gpr:6` withs
+`config/cerro_torre_config.gpr`, which is gitignored (`.gitignore:56`) and absent; `alr` is
+not installed. The "40/41 tests, 97.6%" figure below could not have been produced from a
+clean clone and is retained only as history.
 
 ---
 
@@ -17,7 +20,7 @@
 
 | Component | Status | Completeness |
 |-----------|--------|--------------|
-| **Build System** | ✅ Working | 100% |
+| **Build System** | ❌ Unbuildable on clean checkout | 0% |
 | **Core Types** | ✅ Working | 100% |
 | **HTTP Client** | ✅ Working | 95% |
 | **Registry Client** | ✅ Working | 80% |
@@ -32,7 +35,7 @@
 
 ## ✅ Fully Implemented Features
 
-### 1. Build Infrastructure (100%)
+### 1. Build Infrastructure (0% on a clean checkout — see Build Status above)
 
 - ✅ Alire project configuration
 - ✅ GNAT project files
@@ -350,7 +353,7 @@
 
 | Test Suite | Status | Pass Rate |
 |------------|--------|-----------|
-| **Crypto Tests** | ✅ Passing | 7/7 (100%) |
+| **Crypto Tests** | ⚠ Cannot run — project does not build | unknown |
 | **Parser Tests** | ✅ Ready | N/A (manual use) |
 | **E2E Tests** | ✅ Passing | 40/41 (97.6%) |
 | **Manual Tests** | 🔄 Script created | Pending execution |

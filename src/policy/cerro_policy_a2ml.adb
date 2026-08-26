@@ -187,12 +187,18 @@ is
    --------------------------
 
    function Verify_Trust_Store (Store : Trust_Store) return Boolean is
+      pragma Unreferenced (Store);
    begin
-      -- MVP stub: Always return True
-      -- TODO: Verify Rekor attestation
-      -- TODO: Verify key fingerprints
-      -- TODO: Check key expiry dates
-      return True;
+      --  FAIL-CLOSED. None of the checks below exist, so True would assert a
+      --  verification that never happened. The contract in the spec is
+      --  Post => (if Result then Store.Verified) -- returning False satisfies
+      --  it vacuously and is the only honest answer an unimplemented verifier
+      --  can give.
+      --
+      --  TODO: Verify Rekor attestation
+      --  TODO: Verify key fingerprints
+      --  TODO: Check key expiry dates
+      return False;
    end Verify_Trust_Store;
 
    ----------------------
@@ -200,11 +206,14 @@ is
    ----------------------
 
    function Verify_Policy (Pol : Policy) return Boolean is
+      pragma Unreferenced (Pol);
    begin
-      -- MVP stub: Always return True
-      -- TODO: Verify policy signature
-      -- TODO: Verify Rekor entry for policy
-      return True;
+      --  FAIL-CLOSED, as Verify_Trust_Store above.
+      --  Post => (if Result then Pol.Verified) holds vacuously on False.
+      --
+      --  TODO: Verify policy signature
+      --  TODO: Verify Rekor entry for policy
+      return False;
    end Verify_Policy;
 
 end Cerro.Policy.A2ML;
