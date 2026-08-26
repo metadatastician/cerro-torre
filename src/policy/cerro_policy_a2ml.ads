@@ -139,13 +139,13 @@ is
    function Verify_Trust_Store (Store : Trust_Store) return Boolean
      with Post => (if Verify_Trust_Store'Result then Store.Verified);
    -- Verify trust store attestation (Rekor entry)
-   -- For MVP: stub implementation (always returns True)
+   -- NOT IMPLEMENTED: fails closed, always returns False. Callers deny.
    -- TODO: Implement actual Rekor verification
 
    function Verify_Policy (Pol : Policy) return Boolean
      with Post => (if Verify_Policy'Result then Pol.Verified);
    -- Verify policy signature
-   -- For MVP: stub implementation (always returns True)
+   -- NOT IMPLEMENTED: fails closed, always returns False. Callers deny.
    -- TODO: Implement actual signature verification
 
    -------------------------

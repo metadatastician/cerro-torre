@@ -219,10 +219,17 @@ is
    function Verify_Trust_Store (Store : Trust_Store) return Boolean is
       pragma Unreferenced (Store);
    begin
-      -- MVP stub: Return True
-      -- TODO: Implement Rekor verification
-      -- TODO: Verify key fingerprints match public keys
-      return True;
+      --  FAIL-CLOSED. Nothing below is implemented, so this cannot attest to
+      --  anything; returning True would tell every caller the trust store had
+      --  been verified when no verification exists. In a supply-chain tool
+      --  that is the most dangerous possible default.
+      --
+      --  Returning False makes callers deny. That is correct: a verifier that
+      --  cannot verify must not approve.
+      --
+      --  TODO: Implement Rekor verification
+      --  TODO: Verify key fingerprints match public keys
+      return False;
    end Verify_Trust_Store;
 
    ----------------------
@@ -232,10 +239,13 @@ is
    function Verify_Policy (Pol : Policy) return Boolean is
       pragma Unreferenced (Pol);
    begin
-      -- MVP stub: Return True
-      -- TODO: Verify policy signature
-      -- TODO: Verify Rekor entry
-      return True;
+      --  FAIL-CLOSED, for the same reason as Verify_Trust_Store above: the
+      --  signature and Rekor checks do not exist, so True would be a claim
+      --  this function has no basis to make.
+      --
+      --  TODO: Verify policy signature
+      --  TODO: Verify Rekor entry
+      return False;
    end Verify_Policy;
 
 end Cerro.Policy.Enforce;
