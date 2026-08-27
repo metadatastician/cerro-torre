@@ -83,23 +83,48 @@ is
                   end if;
 
                when Registry_Allowlist =>
-                  -- TODO: Extract bundle registry
-                  declare
-                     Bundle_Registry : constant String := "docker.io";  -- Stub
-                  begin
-                     Details.Registry_Allowed := Allows_Registry (Pol.Pol, Bundle_Registry);
-
-                     if not Details.Registry_Allowed then
-                        Details.Result := Fail;
-                        Details.Reason := To_Bounded_String
-                          ("Registry not allowed: " & Bundle_Registry);
-                        return Details;
-                     end if;
-                  end;
+                  --  FAIL-CLOSED. This requirement cannot be evaluated yet,
+                  --  and until it can it must DENY rather than pass.
+                  --
+                  --  Three stubs used to compound into a permit:
+                  --
+                  --    1. the bundle's registry was never extracted -- the
+                  --       check ran against a hardcoded "docker.io";
+                  --    2. Cerro.Policy.A2ML.Load_Policy never parses the
+                  --       policy file (its own body says "TODO: Actually
+                  --       parse the A2ML file"), so Allowed_Registries is
+                  --       always empty; and
+                  --    3. Allows_Registry treats an empty allowlist as
+                  --       "allow all".
+                  --
+                  --  So this arm asked whether a registry the bundle does not
+                  --  use is permitted by a policy that was never read, and the
+                  --  answer was always yes. The sibling arms -- Min_Signatures,
+                  --  SBOM_Required, Attestation_Required -- already deny on
+                  --  their stub values; this one and Build_Attestation were the
+                  --  only two that did not.
+                  --
+                  --  TODO: extract the registry from the bundle, and parse the
+                  --  policy, then restore a real allowlist check.
+                  Details.Registry_Allowed := False;
+                  Details.Result := Fail;
+                  Details.Reason := To_Bounded_String
+                    ("Registry allowlist cannot be evaluated: bundle registry "
+                     & "not extracted and policy file not parsed");
+                  return Details;
 
                when Build_Attestation =>
-                  -- TODO: Verify SLSA provenance
-                  null;  -- Stub
+                  --  FAIL-CLOSED, same reasoning. This was `null`, so a policy
+                  --  requiring a build attestation was satisfied by doing
+                  --  nothing at all -- a gate that could not fail.
+                  --
+                  --  TODO: verify SLSA provenance through
+                  --  Cerro_Provenance.Verify_Chain once bundles carry a chain.
+                  Details.Result := Fail;
+                  Details.Reason := To_Bounded_String
+                    ("Build attestation required, but SLSA provenance "
+                     & "verification is not implemented");
+                  return Details;
             end case;
          end if;
       end loop;

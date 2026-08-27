@@ -56,7 +56,7 @@ project Cerro_Torre is
    for Object_Dir use "obj/" & Build_Mode;
    for Exec_Dir use "bin";
 
-   for Main use ("cerro_main.adb", "ct_test_parser.adb", "ct_test_crypto.adb", "ct_test_e2e.adb", "ct_test_provenance.adb");
+   for Main use ("cerro_main.adb", "ct_test_parser.adb", "ct_test_crypto.adb", "ct_test_e2e.adb", "ct_test_provenance.adb", "ct_test_policy.adb");
 
    --  Rename executables
    package Builder is
@@ -65,6 +65,7 @@ project Cerro_Torre is
       for Executable ("ct_test_crypto.adb") use "ct-test-crypto";
       for Executable ("ct_test_e2e.adb") use "ct-test-e2e";
       for Executable ("ct_test_provenance.adb") use "ct-test-provenance";
+      for Executable ("ct_test_policy.adb") use "ct-test-policy";
    end Builder;
 
    --  Compiler switches based on build mode and verification level
