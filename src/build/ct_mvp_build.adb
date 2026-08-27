@@ -10,6 +10,11 @@ with GNAT.OS_Lib;
 package body CT_MVP_Build is
 
    use Ada.Text_IO;
+   --  Both (and Left/Right) are Trim_End literals declared in Ada.Strings
+   --  itself, not in its Fixed/Unbounded children. with-ing a child makes the
+   --  parent's NAME visible but not its contents, so every `Trim (X, Both)`
+   --  call in this file failed on "Both is not visible".
+   use Ada.Strings;
    use Ada.Strings.Unbounded;
    use Ada.Strings.Fixed;
 
@@ -26,8 +31,17 @@ package body CT_MVP_Build is
    begin
       Args (1) := new String'("-c");
       Args (2) := new String'(Command);
-      GNAT.OS_Lib.Spawn ("/bin/sh", Args, Status);
-      GNAT.OS_Lib.Free (Args);
+      --  Spawn's three-argument PROCEDURE takes `Success : out Boolean`
+      --  (s-os_lib.ads:869), not an Integer status. The function at :905
+      --  returns the OS status, which is what Status is checked against below.
+      Status := GNAT.OS_Lib.Spawn ("/bin/sh", Args);
+
+      --  Free applies to a String_Access (or String_List_Access), not to a
+      --  String_List. Args is an ARRAY of String_Access, so each element is
+      --  freed individually -- `Free (Args)` had no matching candidate at all.
+      for I in Args'Range loop
+         GNAT.OS_Lib.Free (Args (I));
+      end loop;
       if Status /= 0 then
          raise Program_Error with "Command failed: " & Command;
       end if;
@@ -242,6 +256,13 @@ package body CT_MVP_Build is
          Image_Digest : constant String := Read_First_Token (Temp_Dir & "/manifest.sha256");
          Subject_Digest : constant String := Image_Digest;
          Payload_Type : constant String := "application/vnd.in-toto+json";
+         --  Re-derived, not carried over: the Signer_Id declared at :239
+         --  belongs to the declare block that closes at :252, so it is out of
+         --  scope here -- yet :275 uses it as the DSSE keyid. It is a pure
+         --  function of a file already written by this point, so computing it
+         --  again yields exactly the same value as the earlier binding.
+         Signer_Id : constant String :=
+            "sha256:" & Read_First_Token (Temp_Dir & "/signer.id");
       begin
          --  SLSA statement
          Write_File (Temp_Dir & "/slsa.json",

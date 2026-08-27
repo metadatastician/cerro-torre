@@ -79,9 +79,14 @@ is
      (Index_Type   => Positive,
       Element_Type => Policy_Requirement);
 
+   --  "=" must be passed explicitly. Short_String is Short_Strings.
+   --  Bounded_String, a private type whose "=" is not directly visible here
+   --  (Short_Strings is instantiated above but not use-d), so Vectors' default
+   --  formal "=" has nothing to bind to.
    package String_Vectors is new Ada.Containers.Vectors
      (Index_Type   => Positive,
-      Element_Type => Short_String);
+      Element_Type => Short_String,
+      "="          => Short_Strings."=");
 
    type Policy is record
       ID                 : ID_String;

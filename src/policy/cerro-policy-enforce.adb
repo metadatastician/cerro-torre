@@ -11,6 +11,13 @@ package body Cerro.Policy.Enforce with
    SPARK_Mode => Off
 is
 
+   --  All THREE bounded-string instantiations must be use-d. A2ML declares
+   --  ID_Strings/Short_Strings/Path_Strings as separate instantiations of
+   --  Generic_Bounded_Length, which makes them three unrelated private types
+   --  with three separate To_String operations. ID_Strings was missing, so
+   --  To_String (Pol.Pol.ID) at :201 had no candidate that matched.
+   --  cerro-policy-a2ml.adb use-s all three; this body did not.
+   use ID_Strings;
    use Short_Strings;
    use Path_Strings;
 
@@ -236,7 +243,7 @@ is
    -- Verify_Policy   --
    ----------------------
 
-   function Verify_Policy (Pol : Policy) return Boolean is
+   function Verify_Policy (Pol : A2ML.Policy) return Boolean is
       pragma Unreferenced (Pol);
    begin
       --  FAIL-CLOSED, for the same reason as Verify_Trust_Store above: the

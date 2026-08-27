@@ -48,8 +48,14 @@ is
    -- Policy Handle      --
    -------------------------
 
+   --  A2ML.Policy must be qualified. Inside Cerro.Policy.Enforce the PARENT
+   --  package's simple name "Policy" is directly visible, and a directly
+   --  visible declaration hides a use-visible one -- so bare "Policy" denotes
+   --  the package Cerro.Policy, never the type declared at
+   --  cerro-policy-a2ml.ads:86. A2ML itself needs no qualification there
+   --  because the type is its own declaration.
    type Policy_Handle is record
-      Pol : Policy;
+      Pol : A2ML.Policy;
       Valid : Boolean;
    end record;
 
