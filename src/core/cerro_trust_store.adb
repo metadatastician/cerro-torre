@@ -170,6 +170,12 @@ package body Cerro_Trust_Store is
       F    : File_Type;
       Line : String (1 .. 256);
       Last : Natural;
+
+      --  A sidecar with no recognised key=value line used to report SUCCESS
+      --  with an all-default record. Callers read that as "the meta file was
+      --  read", so an empty or corrupt sidecar was indistinguishable from a
+      --  well-formed one. Recognising nothing is not reading something.
+      Recognised : Natural := 0;
    begin
       if not Exists (Path) then
          return False;
@@ -192,14 +198,18 @@ package body Cerro_Trust_Store is
                   V : constant String := Trim (L (Eq + 1 .. L'Last));
                begin
                   if K = "key_id" then
+                     Recognised := Recognised + 1;
                      Info.Key_Id_Len := Natural'Min (V'Length, Info.Key_Id'Length);
                      Info.Key_Id (1 .. Info.Key_Id_Len) := V (V'First .. V'First + Info.Key_Id_Len - 1);
                   elsif K = "fingerprint" then
+                     Recognised := Recognised + 1;
                      Info.Finger_Len := Natural'Min (V'Length, Info.Fingerprint'Length);
                      Info.Fingerprint (1 .. Info.Finger_Len) := V (V'First .. V'First + Info.Finger_Len - 1);
                   elsif K = "trust" then
+                     Recognised := Recognised + 1;
                      Info.Trust := String_To_Trust (V);
                   elsif K = "created" then
+                     Recognised := Recognised + 1;
                      Info.Created_Len := Natural'Min (V'Length, Info.Created'Length);
                      Info.Created (1 .. Info.Created_Len) := V (V'First .. V'First + Info.Created_Len - 1);
                   end if;
@@ -208,7 +218,7 @@ package body Cerro_Trust_Store is
          end;
       end loop;
       Close (F);
-      return True;
+      return Recognised > 0;
    exception
       when others =>
          if Is_Open (F) then
@@ -436,28 +446,76 @@ package body Cerro_Trust_Store is
          return 0;
    end Key_Count;
 
+   --  KEY MATERIAL IS AUTHORITATIVE; THE .meta SIDECAR IS NOT.
+   --
+   --  This function used to have two branches that disagreed about where a
+   --  fingerprint comes from. With no sidecar it DERIVED one from the key
+   --  (Compute_Fingerprint); with a sidecar it took the sidecar's word and
+   --  overwrote only Public_Key. Since Set_Trust writes a sidecar, every key
+   --  that has ever been trusted HAS one -- so the branch that trusted the
+   --  file was the branch taken for exactly the keys callers ask about, and
+   --  the branch that checked was the one for untrusted keys.
+   --
+   --  That was exploitable by anyone who could write the trust-store
+   --  directory. Get_Key_By_Fingerprint matches on Info.Fingerprint and
+   --  Is_Trusted gates on Info.Trust, both of which came from the sidecar --
+   --  a plain key=value text file. Dropping in attacker.pub beside an
+   --  attacker.meta reading
+   --
+   --     fingerprint=<the victim key's fingerprint>
+   --     trust=ultimate
+   --
+   --  made Is_Trusted (victim_fingerprint) answer True and hand back the
+   --  ATTACKER's key. A fingerprint is a value DERIVED from key material; the
+   --  moment it can be asserted instead, it stops being a fingerprint.
+   --
+   --  The derivation is now hoisted ABOVE the branch rather than mirrored
+   --  into it, because a mirrored copy is how the two branches drifted apart
+   --  in the first place. The sidecar may supply Trust and Created -- nothing
+   --  that identifies the key.
    function Get_Key (Key_Id : String; Info : out Key_Info) return Store_Result is
       Pub_Path : constant String := Key_File_Path (Key_Id);
       Content  : constant String := Read_Text_File (Pub_Path);
+
+      Meta     : Key_Info;
    begin
       if Content'Length = 0 then
          return Not_Found;
       end if;
 
-      if not Read_Meta_File (Key_Id, Info) then
-         --  Create minimal info from pub file
-         Info := (others => <>);
-         Info.Key_Id_Len := Key_Id'Length;
-         Info.Key_Id (1 .. Info.Key_Id_Len) := Key_Id;
-         Info.Pubkey_Len := Natural'Min (Content'Length, 64);
-         Info.Public_Key (1 .. Info.Pubkey_Len) := Content (Content'First .. Content'First + Info.Pubkey_Len - 1);
-         Info.Fingerprint := Compute_Fingerprint (Info.Public_Key (1 .. Info.Pubkey_Len));
-         Info.Finger_Len := 64;
-         Info.Trust := Untrusted;
-      else
-         --  Read public key
-         Info.Pubkey_Len := Natural'Min (Content'Length, 64);
-         Info.Public_Key (1 .. Info.Pubkey_Len) := Content (Content'First .. Content'First + Info.Pubkey_Len - 1);
+      Info := (others => <>);
+
+      --  Key_Id is a String (1 .. 64); the old code assigned Key_Id'Length
+      --  unchecked, so a longer id raised Constraint_Error rather than
+      --  reporting anything.
+      Info.Key_Id_Len := Natural'Min (Key_Id'Length, Info.Key_Id'Length);
+      Info.Key_Id (1 .. Info.Key_Id_Len) :=
+         Key_Id (Key_Id'First .. Key_Id'First + Info.Key_Id_Len - 1);
+
+      Info.Pubkey_Len := Natural'Min (Content'Length, 64);
+      Info.Public_Key (1 .. Info.Pubkey_Len) :=
+         Content (Content'First .. Content'First + Info.Pubkey_Len - 1);
+
+      Info.Fingerprint := Compute_Fingerprint (Info.Public_Key (1 .. Info.Pubkey_Len));
+      Info.Finger_Len := 64;
+      Info.Trust := Untrusted;
+
+      if Read_Meta_File (Key_Id, Meta) then
+         --  A sidecar that ASSERTS a fingerprint must agree with the key it
+         --  sits beside. Disagreement is rejected rather than silently
+         --  resolved in favour of the derived value: letting the derived one
+         --  quietly win would leave a store that is lying to its operator
+         --  looking indistinguishable from a healthy one.
+         if Meta.Finger_Len > 0
+           and then To_Lower (Meta.Fingerprint (1 .. Meta.Finger_Len))
+                    /= To_Lower (Info.Fingerprint (1 .. Info.Finger_Len))
+         then
+            return Invalid_Format;
+         end if;
+
+         Info.Trust       := Meta.Trust;
+         Info.Created     := Meta.Created;
+         Info.Created_Len := Meta.Created_Len;
       end if;
 
       return OK;
