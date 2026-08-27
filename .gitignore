@@ -54,6 +54,8 @@ __pycache__/
 /bin/
 /alire/
 /config/
+!/config/
+!/config/cerro_torre_config.gpr
 
 # Haskell
 /.stack-work/
@@ -90,5 +92,12 @@ _build/
 deps/
 .elixir_ls/
 .cache/
-build/
+# ANCHORED to the repo root on purpose. As a bare `build/` this pattern is
+# unanchored and matches ANY directory named build at ANY depth -- including
+# src/build/, which holds 1,458 lines of real Ada (cerro_pack, cerro_verify,
+# cerro_builder, ct_mvp_build). That is how commit 8c2c1a0 could delete those
+# nine files and leave no trace in `git status`, while cerro_torre.gpr:30 went
+# on listing "src/build" as a source directory -- so the project failed to load
+# before compiling a single line.
+/build/
 dist/
