@@ -81,7 +81,10 @@ is
          raise Parse_Error with "Policy file not found: " & Path;
       end if;
 
-      -- For MVP: Call a2ml CLI to validate
+      --  Validate with the a2ml CLI. FAIL-CLOSED: this used to print
+      --  "Warning: a2ml not available, skipping validation" and carry on, so
+      --  a missing validator silently downgraded to no validation at all.
+      --  A policy that could not be validated is not a validated policy.
       declare
          Command : constant String := "a2ml validate " & Path;
          Success : Boolean;
@@ -92,13 +95,26 @@ is
             Success      => Success);
 
          if not Success then
-            Ada.Text_IO.Put_Line ("Warning: a2ml not available, skipping validation");
+            raise Parse_Error with
+              "policy validation failed for " & Path &
+              " (a2ml unavailable, or the file is invalid). Refusing to load " &
+              "an unvalidated policy.";
          end if;
       end;
 
-      -- For MVP: Return stub policy
-      -- TODO: Actually parse the A2ML file
-      Pol.ID := To_Bounded_String ("stub-policy");
+      --  ⚠ THE FILE IS STILL NOT PARSED. Everything below fabricates a policy
+      --  rather than reading Path, and the caller cannot tell the difference
+      --  from the return type alone.
+      --
+      --  Verified is left False and Cerro.Policy.Enforce's Registry_Allowlist
+      --  arm now DENIES outright, so this can no longer be laundered into a
+      --  permit — but a fabricated policy is still a lie, and the ID says so
+      --  explicitly so it shows up in the audit log rather than reading as a
+      --  real policy named after the file.
+      --
+      --  TODO: actually parse the A2ML file. Until then, treat any Policy
+      --  returned by this function as UNVERIFIED regardless of its contents.
+      Pol.ID := To_Bounded_String ("UNPARSED-STUB-POLICY");
       Pol.Version := To_Bounded_String ("1.0");
       Pol.Description := To_Bounded_String ("Stub policy for MVP");
       Pol.Verified := False;
@@ -167,9 +183,24 @@ is
          end loop;
       end if;
 
-      -- If allowlist is empty, allow all (except blocked)
+      --  An empty allowlist DENIES. This used to return True — "allow all
+      --  except blocked" — which is a defensible policy only when the
+      --  emptiness is deliberate. It is not distinguishable from the two ways
+      --  a list ends up empty by accident:
+      --
+      --    * Load_Policy does not parse the file, so every Policy it returns
+      --      has an empty allowlist regardless of what the file says; and
+      --    * a malformed or truncated policy would produce the same shape.
+      --
+      --  So "empty" meant "unconfigured OR unloadable OR broken", and all
+      --  three read as permit-everything. An allowlist that cannot be read is
+      --  not an allowlist that permits.
+      --
+      --  If allow-all is genuinely wanted, it should be stated in the policy
+      --  as an explicit wildcard entry, so the intent is in the file rather
+      --  than inferred from an absence.
       if Pol.Allowed_Registries.Is_Empty then
-         return True;
+         return False;
       end if;
 
       -- Check allowlist
