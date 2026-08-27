@@ -5,9 +5,11 @@
 with Ada.Text_IO;
 with Ada.Directories;
 with Ada.Environment_Variables;
+--  Run_Keygen declares Unbounded_String locals (:22, :23) and calls
+--  To_Unbounded_String/To_String; the unit had never with-ed this.
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with GNAT.OS_Lib;
 with Cerro_Trust_Store;
-with Cerro_Crypto;
 with Cerro_Crypto_OpenSSL;
 
 package body Cerro_CLI_Keygen_Rust is
@@ -53,8 +55,9 @@ package body Cerro_CLI_Keygen_Rust is
              new String'(Pub_Path));
          Exit_Status : Integer;
       begin
-         --  Execute cerro-sign keygen
-         Spawn (Cerro_Sign, Args, Exit_Status, True);
+         --  Execute cerro-sign keygen. See cerro_pack_rust_signing.adb for
+         --  why the four-argument Spawn call this replaced never existed.
+         Exit_Status := Spawn (Cerro_Sign, Args);
 
          --  Free arguments
          for I in Args'Range loop
@@ -86,33 +89,58 @@ package body Cerro_CLI_Keygen_Rust is
          end;
       end;
 
-      --  Import to trust store
+      --  Import to trust store.
+      --
+      --  This block was written against a Cerro_Trust_Store that does not
+      --  exist and never has. It named a type Store_Status (the real one is
+      --  Store_Result), called Public_Key_To_String (no such subprogram
+      --  anywhere in the tree), and passed Import_Key six named parameters --
+      --  Key_Id_Val, Public_Key, Fingerprint, Trust_Level, Key_Type_Val,
+      --  Suite -- none of which it has. Ed25519 and CT_SIG_01 were undefined
+      --  too: the only Ed25519 in the tree is a Key_Algorithm literal
+      --  belonging to a different subsystem (cerro-policy-a2ml.ads:36).
+      --
+      --  Rewritten against the real API (cerro_trust_store.ads:47, 51):
+      --    function Import_Key (Path : String; Key_Id : String := "")
+      --    function Set_Trust  (Key_Id : String; Level : Trust_Level)
+      --
+      --  Two consequences worth stating rather than hiding:
+      --
+      --  * Import_Key reads the key from a FILE, so the public key is
+      --    imported from Pub_Path. The Public_Key binary decoded above is now
+      --    used only to validate that what cerro-sign wrote is well-formed
+      --    before the store is asked to read it -- which is still worth
+      --    doing, and is why that step is kept.
+      --
+      --  * The old code PRINTED "Trust level set to 'ultimate'" while merely
+      --    passing Trust_Level to a call that could not accept it. Setting
+      --    the trust level is a separate operation, so it is now a separate
+      --    call, and the message is printed only if that call succeeds.
       declare
-         Result : Store_Status;
-         Fingerprint : Cerro_Crypto.SHA256_Digest;
+         Pub_Path : constant String :=
+            To_String (Output_Dir) & To_String (Key_Id) & ".pub";
+         Imported  : Store_Result;
+         Trusted   : Store_Result;
       begin
-         --  Compute fingerprint of public key
-         Fingerprint := Cerro_Crypto.Compute_SHA256 (
-            Public_Key_To_String (Public_Key));
+         Imported := Import_Key (Path => Pub_Path, Key_Id => To_String (Key_Id));
 
-         --  Import public key
-         Result := Import_Key (
-            Key_Id_Val    => To_String (Key_Id),
-            Public_Key    => Public_Key,
-            Fingerprint   => Cerro_Crypto.Bytes_To_Hex (Fingerprint),
-            Trust_Level   => Ultimate,
-            Key_Type_Val  => Ed25519,
-            Suite         => CT_SIG_01);
+         if Imported /= OK then
+            TIO.Put_Line ("✗ Failed to import public key: " & Imported'Image);
+            return;
+         end if;
 
-         case Result is
-            when OK =>
-               TIO.Put_Line ("✓ Private key saved: " &
-                           To_String (Output_Dir) & To_String (Key_Id) & ".priv");
-               TIO.Put_Line ("✓ Public key imported to trust store");
-               TIO.Put_Line ("✓ Trust level set to 'ultimate'");
-            when others =>
-               TIO.Put_Line ("✗ Failed to import public key");
-         end case;
+         Trusted := Set_Trust (To_String (Key_Id), Ultimate);
+
+         TIO.Put_Line ("✓ Private key saved: " &
+                     To_String (Output_Dir) & To_String (Key_Id) & ".priv");
+         TIO.Put_Line ("✓ Public key imported to trust store");
+
+         if Trusted = OK then
+            TIO.Put_Line ("✓ Trust level set to 'ultimate'");
+         else
+            TIO.Put_Line ("✗ Key imported, but trust level NOT set: " &
+                        Trusted'Image);
+         end if;
       end;
    end Run_Keygen;
 

@@ -43,8 +43,19 @@ package body Cerro_Pack_Rust_Signing is
       Sig_Last    : Natural;
       Success     : Boolean;
    begin
-      --  Execute cerro-sign
-      Spawn (Cerro_Sign, Args, Exit_Status, True);
+      --  Execute cerro-sign.
+      --
+      --  This was written as Spawn (Cerro_Sign, Args, Exit_Status, True), a
+      --  procedure that does not exist in GNAT.OS_Lib. The nearest overload
+      --  (s-os_lib.ads:915) takes an Output_File_Descriptor and a SEPARATE
+      --  out Return_Code, so Exit_Status was being matched against a
+      --  File_Descriptor. The function at :905 is what was meant: it returns
+      --  the operating system's status directly.
+      --
+      --  The dropped True was Err_To_Out. The function form does not redirect,
+      --  so cerro-sign's stderr now reaches this process's stderr instead of
+      --  being folded into stdout -- which is what a CLI wants anyway.
+      Exit_Status := Spawn (Cerro_Sign, Args);
 
       --  Free arguments
       for I in Args'Range loop
@@ -73,7 +84,10 @@ package body Cerro_Pack_Rust_Signing is
       declare
          Signature : Cerro_Crypto.Ed25519_Signature;
       begin
-         Hex_To_Signature (Sig_Hex (1 .. Sig_Last), Signature, Success);
+         --  Qualified: with-ing Cerro_Crypto_OpenSSL makes the unit visible
+         --  but not its contents; there is no use clause for it here.
+         Cerro_Crypto_OpenSSL.Hex_To_Signature
+            (Sig_Hex (1 .. Sig_Last), Signature, Success);
 
          if not Success then
             return (Success => False,
