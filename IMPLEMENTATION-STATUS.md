@@ -1,22 +1,75 @@
-> [!WARNING]
-> **SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.**
-> See `STATUS.md` in this repo for measured state, and
-> `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
-> Falsified here: claims 'Build System OK Working 100%' and 'Build Status: PASSING' — the project does not build on a clean checkout (config/*.gpr gitignored, alr absent, liboqs absent). Retained for history; do not cite.
-
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+> [!WARNING]
+> **SUPERSEDED — the percentages and feature ticks below are unmeasured and predate 2026-01-25. Do not cite them.**
+> See `STATUS.md` for measured state.
+>
+> The 2026-07-28 falsification banner that stood here has itself been overtaken by
+> events, so it is restated rather than repeated. It said the project *"does not
+> build on a clean checkout (config/\*.gpr gitignored, alr absent, liboqs absent)."*
+> Two of those three causes are now fixed, and a fourth cause it never identified
+> turned out to be the real one.
+
 # Cerro Torre - Implementation Status
 
-**Last Updated**: 2026-01-25
+## Build status, measured 2026-08-27
+
+**The project compiles for the first time. It does not yet link.**
+
+```
+gprbuild -c -k -U -P cerro_torre.gpr -p -j0
+  35 of 36 .adb files: zero semantic errors
+   1 of 36:            cerro_provenance.adb, 50 errors -- see issue #22
+```
+
+Four stacked defects, each hiding the next, are what actually stopped this
+building — none of them was the Alire config file that was blamed:
+
+1. **An estate sweep had deleted 1,458 lines of source.** Commit `8c2c1a0`
+   (2026-07-23) removed all nine files in `src/build/` while `cerro_torre.gpr:30`
+   still listed the directory, so the project died at *project load* — exit 5,
+   zero files compiled. Restored in #20.
+2. **`.gitignore` hid the deletion.** Line 95 was an unanchored `build/`, which
+   matches `src/build/` at any depth, so 1,458 deleted lines of Ada left nothing
+   in `git status`. Anchored to `/build/` in #20.
+3. **`config/cerro_torre_config.gpr` was gitignored and Alire-generated**, and
+   `alr` is unavailable. Nothing in the tree dereferences any
+   `Cerro_Torre_Config.*` identifier, so a six-line abstract project satisfies the
+   with-clause. Added in #20.
+4. **Widespread never-compiled Ada.** Two child units had no parent packages at
+   all; two package bodies had no spec; three call sites used a `Spawn` overload
+   that does not exist; the keygen block was written against a trust-store API
+   that never existed. Fixed in #21.
+
+**Known-open, both tracked:**
+
+- **#22** — `cerro_provenance.adb` is not a broken body: its spec declares 9
+  subprograms, it implements 8, and the overlap is **zero**. Two incompatible
+  designs of one package. Needs a design decision, not a fix. Zero callers, and no
+  fail-open path, so nothing is armed by leaving it.
+- **#23** — **liboqs blocks LINK, not compile**, so there is still no `bin/ct`
+  here. `src/bindings/liboqs.ads` uses `pragma Import` with no header inclusion,
+  so the Ada compiles and `-loqs` fails at link. Owner has ruled the repo must be
+  standalone-buildable; `CERRO_FEATURES=infrastructure` does **not** currently
+  achieve that (it adds 3 further errors, because `src/core/ct_pqcrypto.adb` is in
+  every feature set and references the excluded `src/bindings`).
+
+**On style diagnostics:** `cerro_torre.gpr:75` sets `-gnaty…` but **not**
+`-gnatwe`. A forced recompile of a file with 34 style violations exits **0**, so
+they are warnings and are excluded from the counts above rather than folded in.
+
+---
+
+**Last Updated**: 2026-01-25 *(the section above is 2026-08-27; everything below this line is the original January document)*
 **Version**: 0.2.0-dev
-**Build Status**: ❌ **DOES NOT BUILD ON A CLEAN CHECKOUT** — `cerro_torre.gpr:6` withs
-`config/cerro_torre_config.gpr`, which is gitignored (`.gitignore:56`) and absent; `alr` is
-not installed. The "40/41 tests, 97.6%" figure below could not have been produced from a
-clean clone and is retained only as history.
 
 ---
 
 ## Quick Status Overview
+
+> The table and percentages below are the original January 2026 self-assessment.
+> They were never measured, and the `Build System … 0%` row is now wrong in both
+> directions — it compiles (35 of 36 bodies clean) but still does not link. Read
+> the measured section at the top of this file instead.
 
 | Component | Status | Completeness |
 |-----------|--------|--------------|
@@ -35,13 +88,19 @@ clean clone and is retained only as history.
 
 ## ✅ Fully Implemented Features
 
-### 1. Build Infrastructure (0% on a clean checkout — see Build Status above)
+### 1. Build Infrastructure — see the measured Build status at the top of this file
 
-- ✅ Alire project configuration
+- ⚠️ Alire project configuration — `alr` is not available here, and the config
+  project it generates is gitignored; a hand-written abstract stand-in is
+  committed instead (#20)
 - ✅ GNAT project files
 - ✅ Multi-mode builds (Development, Release, Proof)
-- ✅ Test executables (crypto, parser, e2e)
-- ✅ Clean compilation (no errors, style warnings only)
+- ⚠️ Test executables (crypto, parser, e2e) — declared as `Main`, but none can be
+  produced until the link succeeds (#23)
+- ⚠️ Compilation — **35 of 36 bodies clean as of 2026-08-27** (#20, #21). Not
+  "clean compilation": `cerro_provenance.adb` still has 50 errors (#22). This
+  line previously read "✅ Clean compilation (no errors, style warnings only)"
+  at a time when the project could not even be opened.
 
 ### 2. HTTP Client (CT_HTTP) - 95%
 

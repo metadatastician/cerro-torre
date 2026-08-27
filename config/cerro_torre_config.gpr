@@ -1,0 +1,13 @@
+--  SPDX-License-Identifier: MPL-2.0
+--
+--  Hand-written stand-in for the Alire-generated crate config.
+--
+--  cerro_torre.gpr:6 withs this file, but `config/` is gitignored (.gitignore:56)
+--  and Alire generates it -- so a clean clone could never load the project. `alr`
+--  is not available here, and nothing in the tree dereferences any
+--  Cerro_Torre_Config.* identifier (verified), so an empty abstract project is
+--  sufficient to satisfy the with-clause.
+--
+--  Delete this if the project is ever built under `alr build`, which regenerates it.
+abstract project Cerro_Torre_Config is
+end Cerro_Torre_Config;

@@ -54,12 +54,23 @@ package Cerro_SELinux is
    --  Policy Validation
    ---------------------------------------------------------------------------
 
+   --  Unsupported_Format and Validation_Failed are appended, not inserted:
+   --  appending leaves every existing literal's 'Pos unchanged. The body has
+   --  returned both since it was written (cerro_selinux.adb:226, :242, :252,
+   --  :289) while neither was ever declared here, so the file could not
+   --  compile.
    type Validation_Status is
       (Valid,
        Syntax_Error,
        Type_Error,
        Conflict,
-       Too_Permissive);
+       Too_Permissive,
+       --  Policy is in a format this validator cannot check (only CIL can be
+       --  checked, via secilc). NOT a judgement about the policy itself.
+       Unsupported_Format,
+       --  The external validator could not be run, or ran and rejected the
+       --  policy without a more specific classification.
+       Validation_Failed);
 
    function Validate_Policy
       (Policy : String;
