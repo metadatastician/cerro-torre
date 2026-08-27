@@ -139,18 +139,39 @@ project Cerro_Torre is
    end Binder;
 
    --  Linker settings
-   --  liboqs is now a hard build dependency: CT_PQCrypto/LibOQS use
-   --  `pragma Import (C, ...)` (static symbol resolution), so -loqs must
-   --  resolve at LINK time — there is no build without liboqs installed
-   --  and discoverable (system package, or -L/-I via LIBRARY_PATH /
-   --  C_INCLUDE_PATH for a from-source install). CT_PQCrypto's runtime
-   --  Is_LibOQS_Available check is defense-in-depth against a *minimal*
-   --  liboqs build that omits ML-DSA-87 specifically, not a way to make
-   --  liboqs itself optional.
+   --
+   --  liboqs is required by exactly ONE executable, and it is not the CLI.
+   --
+   --  This block used to add "-loqs" to Default_Switches, i.e. to EVERY
+   --  executable, with a comment stating "there is no build without liboqs
+   --  installed". That was not true, and had not been: GNAT links only the
+   --  closure each main actually reaches, and `ct_pqcrypto.o` appears in the
+   --  closure of just one of the five mains. Measured:
+   --
+   --     cerro_main          20 objects, no ct_pqcrypto  -> no liboqs needed
+   --     ct_test_parser                  no ct_pqcrypto  -> no liboqs needed
+   --     ct_test_e2e                     no ct_pqcrypto  -> no liboqs needed
+   --     ct_test_provenance              no ct_pqcrypto  -> no liboqs needed
+   --     ct_test_crypto      REACHES CT_PQCrypto         -> needs liboqs
+   --
+   --  So a global -loqs made a clean checkout unbuildable in its entirety for
+   --  the sake of one test. bin/ct itself links and runs without it --
+   --  verified by hand-linking the same objects with -loqs removed and
+   --  running the result: `ct --help` and `ct --version` both work.
+   --
+   --  liboqs links against OpenSSL's libcrypto internally (EVP_* fetch API),
+   --  so where -loqs IS used, -lcrypto must follow it in link order.
    package Linker is
-      --  liboqs links against OpenSSL's libcrypto internally (EVP_* fetch
-      --  API); -lcrypto must come after -loqs in link order.
-      for Default_Switches ("Ada") use ("-loqs", "-lcrypto");
+      --  Everything needs libcrypto: Cerro_Crypto_OpenSSL shells out to the
+      --  openssl binary, and Cerro_Crypto's Ed25519 is pure Ada, but the
+      --  OpenSSL bindings still link against it.
+      for Default_Switches ("Ada") use ("-lcrypto");
+
+      --  The one main that reaches CT_PQCrypto. If liboqs is absent this
+      --  executable alone fails to link, which is correct and legible: it is
+      --  the post-quantum test, and a post-quantum test that builds without
+      --  the post-quantum library would be testing nothing.
+      for Switches ("ct_test_crypto.adb") use ("-loqs", "-lcrypto");
    end Linker;
 
    --  SPARK Proof settings
