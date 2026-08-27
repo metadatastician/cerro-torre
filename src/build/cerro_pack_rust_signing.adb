@@ -1,11 +1,12 @@
---  Cerro_Pack - Signing using Rust cerro-sign binary
 --  SPDX-License-Identifier: MPL-2.0
+--  Cerro_Pack - Signing using Rust cerro-sign binary
 --  Replacement for shell script signing
 
 with Ada.Text_IO;
 with Ada.Directories;
 with GNAT.OS_Lib;
 with Ada.Strings.Fixed;
+with Cerro_Crypto_OpenSSL;
 
 package body Cerro_Pack_Rust_Signing is
 

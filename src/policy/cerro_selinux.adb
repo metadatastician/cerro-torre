@@ -219,7 +219,11 @@ package body Cerro_SELinux is
       F : File_Type;
       Success : Boolean;
       Exit_Status : Integer;
-      Validator : String_Access;
+      --  Qualified: cerro_selinux.ads:10 does "use Ada.Strings.Unbounded" and
+      --  line 216 below does "use GNAT.OS_Lib". Both declare String_Access, so
+      --  the bare name is ambiguous. Locate_Exec_On_Path/Spawn/Free below are
+      --  all GNAT.OS_Lib, so that is the one meant.
+      Validator : GNAT.OS_Lib.String_Access;
    begin
       --  Only CIL format can be validated with secilc
       if Format /= CIL then
@@ -343,7 +347,7 @@ package body Cerro_SELinux is
       use Ada.Directories;
       use GNAT.OS_Lib;
 
-      Semodule : String_Access;
+      Semodule : GNAT.OS_Lib.String_Access;  --  qualified; see Validator above
       Exit_Status : Integer;
    begin
       --  Verify policy file exists
@@ -383,7 +387,7 @@ package body Cerro_SELinux is
    function Remove_Policy (Module_Name : String) return Boolean is
       use GNAT.OS_Lib;
 
-      Semodule : String_Access;
+      Semodule : GNAT.OS_Lib.String_Access;  --  qualified; see Validator above
       Exit_Status : Integer;
    begin
       --  Verify module name is not empty
