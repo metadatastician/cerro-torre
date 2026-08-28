@@ -68,10 +68,17 @@ fun verify_signature_chain
           // Create a copy of hash for verification
           val hash_copy = bytes32_copy(hash)
 
-          // Verify this signature (must consume sig)
-          // Since sig is borrowed from list, we need to work with it carefully
-          // For now, stub implementation
-          val is_valid = true  // TODO: actual verification
+          // SECURITY (fail-closed): real signature-share verification is NOT
+          // implemented in this shadow verifier. `verify_signature` /
+          // `result_is_success` are `ext#` symbols with no in-repo C body, and
+          // `sig` is borrowed from the list (!List_vt) so it cannot be consumed
+          // by `verify_signature` (which takes ownership) without an ownership
+          // rework. An unimplemented verifier MUST reject, never accept, so
+          // `is_valid` is FALSE. Do NOT flip this back to `true`: a real
+          // implementation must (a) make `sig` owned so `verify_signature` can
+          // consume it, (b) branch on `result_is_success`, and (c) only then
+          // restore a `true` seed in `loop` below (see the fail-closed seed).
+          val is_valid = false  // fail-closed: verifier not implemented (was: true // TODO)
 
           // Free the hash copy
           val () = bytes32_free(hash_copy)
@@ -79,7 +86,12 @@ fun verify_signature_chain
           loop(rest, hash, acc && is_valid)
         end
   in
-    loop(sigs, hash, true)
+    // Fail-closed seed: an EMPTY signature chain must REJECT. With a `true`
+    // seed, `list_vt_nil() => acc` returns true, so a bundle whose signatures
+    // were stripped would pass (vacuous-truth fail-open). A real implementation
+    // must restore the `true` seed AND additionally require a non-empty chain
+    // (n > 0) so zero-signature bundles still reject.
+    loop(sigs, hash, false)
   end
 
 // ============================================================================
