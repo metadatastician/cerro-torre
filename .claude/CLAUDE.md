@@ -52,6 +52,7 @@ The following files in `.machine_readable/` contain structured project metadata:
 | Banned | Replacement |
 |--------|-------------|
 | TypeScript | AffineScript |
+| ReScript | AffineScript |
 | ReScript | AffineScript — no new .res; existing .res grandfathered in .hypatia-baseline.json pending migration |
 | Deno | Bun |
 | Node.js | Bun |
