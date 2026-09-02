@@ -10,7 +10,7 @@ nimage:https://www.bestpractices.dev/projects/8509/badge[OpenSSF Best Practices,
 
 == License
 
-Licensed under *PMPL-1.0-or-later* (Palimpsest-MPL License). The full text is in `LICENSE` and `license/PMPL-1.0.txt`.
+See the root `LICENSE`, `LICENSE-AGPL`, and `LICENSE-MIT` files for the applicable licence terms.
 
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell
