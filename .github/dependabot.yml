@@ -1,6 +1,22 @@
 # SPDX-License-Identifier: MPL-2.0
-# Dependabot configuration for RSR-compliant repositories
-# Covers common ecosystems - remove unused ones for your project
+# Dependabot configuration for cerro-torre.
+#
+# Adapted 2026-09-04 from the RSR template block, whose own header said
+# "remove unused ones for your project" -- that adaptation had never been done,
+# so this repo declared six ecosystems of which three had no manifest anywhere
+# and one pointed at the wrong directory. Measured before editing:
+#
+#   github-actions  /                  .github/workflows          PRESENT  -> kept
+#   cargo           /                  Cargo.toml                 PRESENT  -> kept
+#   mix             /                  mix.exs NOT at root; it is
+#                                      at /cerro_torre_stack      MISPOINTED -> repaired
+#   npm             /                  no package.json anywhere   ABSENT   -> removed
+#   pip             /                  no .py file anywhere       ABSENT   -> removed
+#   nix             /                  no flake.nix/default.nix   ABSENT   -> removed
+#
+# `pip` and `nix` were also policy contradictions, not merely dead weight:
+# Python is banned estate-wide, and governance runs a required check named
+# "Guix packaging policy (Nix retired)".
 
 version: 2
 updates:
@@ -14,38 +30,21 @@ updates:
         patterns:
           - "*"
 
-  # Rust/Cargo
+  # Rust/Cargo - Cargo.toml is at the repository root
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
       interval: "weekly"
     # `open-pull-requests-limit: 0` suppresses routine version-update PRs
     # while leaving Dependabot SECURITY PRs flowing. The previous
-    # `ignore: "*" patch` rule also silenced security PRs under GitHub\'s
+    # `ignore: "*" patch` rule also silenced security PRs under GitHub's
     # current Dependabot behaviour. See rsr-template-repo commit 78b050e
     # and 007-lang/audits/audit-dependabot-automation-gap-2026-04-17.md.
     open-pull-requests-limit: 0
 
-  # Elixir/Mix
+  # Elixir/Mix - the umbrella lives in /cerro_torre_stack, NOT at the root.
+  # Declared at "/" this entry matched no manifest and did nothing.
   - package-ecosystem: "mix"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  # Node.js/npm
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  # Python/pip
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  # Nix flakes
-  - package-ecosystem: "nix"
-    directory: "/"
+    directory: "/cerro_torre_stack"
     schedule:
       interval: "weekly"
