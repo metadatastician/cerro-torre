@@ -73,7 +73,7 @@ defmodule Svalinn.MixProject do
       {:cors_plug, "~> 3.0"},
 
       # Testing
-      {:dns_cluster, "~> 0.2.0"},
+      {:dns_cluster, "~> 0.3.0"},
       {:swoosh, "~> 1.16"}
     ]
   end
