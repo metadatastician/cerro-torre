@@ -11,7 +11,8 @@ with Ada.Containers.Vectors;
 with Ada.Strings.Bounded;
 
 package Cerro.Policy.A2ML with
-   SPARK_Mode,
+   SPARK_Mode => Off,  --  Uses Ada.Containers.Vectors (Keys/Requirements/
+                       --  registry lists) — dynamic containers, outside SPARK.
    Elaborate_Body
 is
 

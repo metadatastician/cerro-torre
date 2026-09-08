@@ -9,7 +9,8 @@ pragma Assertion_Policy (Check);
 with Cerro.Policy.A2ML;
 
 package Cerro.Policy.Enforce with
-   SPARK_Mode,
+   SPARK_Mode => Off,  --  Re-exports A2ML.Policy / Trust_Store, which are
+                       --  Vectors-backed — outside the SPARK subset.
    Elaborate_Body
 is
 
