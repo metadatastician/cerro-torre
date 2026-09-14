@@ -14,7 +14,13 @@ config :svalinn, SvalinnWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "4SowODMmz+34936ldEyQ/0a8mmxKRTZhQvxq/SIF6b2Pb4ZrsgELN0nsWNKjT29k",
+  secret_key_base:
+    System.get_env("SECRET_KEY_BASE") ||
+      # Dev/test only. Deliberately built at runtime rather than written
+      # as a 64-character literal, so nothing credential-shaped is ever
+      # committed. config/runtime.exs raises if SECRET_KEY_BASE is unset,
+      # so production cannot reach this fallback.
+      String.duplicate("dev-only-not-a-secret-", 4),
   watchers: []
 
 # ## SSL Support
