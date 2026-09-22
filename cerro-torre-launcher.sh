@@ -16,7 +16,7 @@
 #     "LM-LA-LIFECYCLE-STANDARD.adoc"
 #     "cross-platform-system-integration-modes"
 #   ]
-#   standard-spec-version = "0.3.0"
+#   standard-spec-version = "0.4.0"
 #   generator             = "launch-scaffolder"
 # )
 # @a2ml-metadata end
@@ -50,7 +50,7 @@ ICON_SOURCE="/assets/icon-256.png"
 # produced this script. Consumed by the --integ / --disinteg arms when
 # the `launch-scaffolder` binary is on $PATH, so they can delegate to
 # the Rust implementation instead of running the shell fallback.
-CONFIG_FILE="/home/hyperpolymath/developer/meta-repos/cerro-torre/cerro-torre.launcher.a2ml"
+CONFIG_FILE="/home/vercel-sandbox/workspace/repos/github.com/metadatastician/cerro-torre/cerro-torre.launcher.a2ml"
 
 URL=""
 
@@ -311,9 +311,15 @@ do_integ_linux() {
         gio set "$DESKTOP_SHORTCUT_TARGET" "metadata::trusted" true 2>/dev/null || true
     fi
     if [ -x "/var/mnt/eclipse/repos/.desktop-tools/verify-desktop-integrity.sh" ]; then
-        /var/mnt/eclipse/repos/.desktop-tools/verify-desktop-integrity.sh --generate 2>/dev/null \
-            && log "  + integrity hashes generated" \
-            || log "  · integrity hash generation failed (non-fatal)"
+        # if/else, not `cmd && log || log`: in that form a FAILING log on the
+        # success branch also fires the failure branch, so a run that worked
+        # reports both "generated" and "generation failed". The command's own
+        # status is what should choose the message.
+        if /var/mnt/eclipse/repos/.desktop-tools/verify-desktop-integrity.sh --generate 2>/dev/null; then
+            log "  + integrity hashes generated"
+        else
+            log "  · integrity hash generation failed (non-fatal)"
+        fi
     fi
 }
 
