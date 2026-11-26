@@ -58,7 +58,7 @@ R- code is production-quality. The *verification approach* is experimental.
 
 [cols="1,1,1,1",options="header"]
 |===
-| Variant | Ada/SPARK | Idris2 | ATS2
+| Variant | Ada/SPARK | Idris2 | Idris2 linear shadow
 
 | Standard (ct-*)
 | ✅
@@ -128,7 +128,7 @@ For military/financial systems requiring linear type verification:
 ----
 cd ../containerfiles-extreme/
 
-# eXtreme builds (ATS2 + SPARK)
+# eXtreme builds (Idris2 linear shadow + SPARK)
 just build-X-ct-i   # Infrastructure
 just build-X-ct-a   # Attestation
 just build-X-ct     # Complete

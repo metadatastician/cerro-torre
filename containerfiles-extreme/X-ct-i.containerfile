@@ -1,42 +1,43 @@
 # SPDX-License-Identifier: MPL-2.0
-# X-ct-i: eXtreme security infrastructure variant (ATS2 + Ada/SPARK verification)
+# X-ct-i: eXtreme security infrastructure variant (Idris2 linear shadow + Ada/SPARK verification)
 
 FROM ghcr.io/alire-project/alire:latest AS builder
 WORKDIR /build
 
-# Install dependencies including ATS2
+# Install dependencies including Idris2
 RUN apt-get update && apt-get install -y \
     gnat-13 gprbuild libcurl4-openssl-dev \
-    ats2-lang \
+    idris2 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /build
 
-# Build with ATS2 linear type verification enabled
+# Build with the Idris2 linear-type shadow model enabled
 RUN alr build --release -- \
     -XCERRO_FEATURES=infrastructure \
     -XCERRO_BUILD_MODE=Release \
-    -XCERRO_VERIFICATION=ats2
+    -XCERRO_VERIFICATION=idris2-shadow
 
-# Compile and verify ATS2 shadow verifier
-RUN cd verification/ats && \
-    patscc -DATS_MEMALLOC_LIBC -tc shadow_verifier.dats && \
-    patsopt -tc -d shadow_verifier.dats
+# Typecheck the Idris2 linear shadow model and build the ct-shadow checker
+RUN cd verification/idris && idris2 --build cerro-torre.ipkg && \
+    cd /build/tools/ct-shadow && idris2 --build ct-shadow.ipkg && \
+    build/exec/ct-shadow --self-test
 
 # Final image
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
-    ca-certificates libcurl4 curl \
+    ca-certificates libcurl4 curl chezscheme \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /build/bin/ct /usr/local/bin/
-COPY --from=builder /build/verification/ats/shadow_verifier /usr/local/bin/ct-shadow
-RUN ct --version && ct-shadow --version
+COPY --from=builder /build/tools/ct-shadow/build/exec/ /usr/local/lib/ct-shadow/
+RUN ln -s /usr/local/lib/ct-shadow/ct-shadow /usr/local/bin/ct-shadow
+RUN ct --version && ct-shadow --self-test
 
 ENV CT_VARIANT=extreme-infrastructure
-ENV CT_VERIFICATION=ats2+spark
+ENV CT_VERIFICATION=idris2-shadow+spark
 ENV CT_SHADOW_VERIFIER=/usr/local/bin/ct-shadow
-LABEL org.opencontainers.image.description="Cerro Torre eXtreme Security Build (ATS2+SPARK) - Infrastructure variant"
+LABEL org.opencontainers.image.description="Cerro Torre eXtreme Security Build (Idris2+SPARK) - Infrastructure variant"
 
 ENTRYPOINT ["/usr/local/bin/ct"]
 CMD ["--help"]

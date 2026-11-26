@@ -221,7 +221,7 @@ sha256sum nginx1.ctp nginx2.ctp  # Must match
 | Key ordering | ✓ Section 6 (lexicographic UTF-8)
 | Numeric rules | ✓ Section 7
 | Conformance vectors | ✗ Not created yet
-| ATS shadow verifier | ✓ `tools/ats-shadow/main.dats`
+| Idris2 shadow verifier | ✓ `tools/ct-shadow/src/Main.idr`
 |===
 
 *TODO:*

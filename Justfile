@@ -57,13 +57,18 @@ prove:
 run *args:
     alr run -- {{args}}
 
-# Build the ATS2 shadow verifier
+# Build the Idris2 shadow verifier (tools/ct-shadow)
 shadow-build:
-    @if command -v patscc &> /dev/null; then \
-        patscc -O2 -DATS_MEMALLOC_LIBC -o ct-shadow tools/ats-shadow/main.dats; \
+     command -v idris2 &> /dev/null; then \
+        (cd tools/ct-shadow && idris2 --build ct-shadow.ipkg) && \
+        echo "built tools/ct-shadow/build/exec/ct-shadow"; \
     else \
-        echo "patscc not found - install ATS2 for shadow verifier"; \
+        echo "idris2 not found - install Idris2 0.7.0 for the shadow verifier"; \
     fi
+
+# Run the shadow verifier self-test (needs shadow-build first)
+shadow-test: shadow-build
+    tools/ct-shadow/build/exec/ct-shadow --self-test
 
 # ============================================================
 # Container Image Variants (3x3 Matrix)
@@ -80,7 +85,7 @@ build-standard: build-ct-i build-ct-a build-ct
 # Build all research variants (Idris2 + SPARK)
 build-research: build-R-ct-i build-R-ct-a build-R-ct
 
-# Build all extreme variants (ATS2 + SPARK)
+# Build all extreme variants (Idris2 linear shadow + SPARK)
 build-extreme: build-X-ct-i build-X-ct-a build-X-ct
 
 # ============================================================
@@ -134,7 +139,7 @@ build-R-ct:
       -t R-ct:latest .
 
 # ============================================================
-# eXtreme Security Variants (X- prefix, ATS2 + SPARK)
+# eXtreme Security Variants (X- prefix, Idris2 linear shadow + SPARK)
 # ============================================================
 
 # Build X-ct-i (extreme infrastructure)

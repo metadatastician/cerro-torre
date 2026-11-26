@@ -44,7 +44,7 @@ Each component has different security requirements based on its role.
 
 | **Formal Verification (Coq/Isabelle)**
 | ✅ DONE
-| Uses Ada/SPARK + Idris2 (R-variants) + ATS2 (X-variants)
+| Uses Ada/SPARK + Idris2 (R-variants) + Idris2 linear shadow model (X-variants)
 
 | **Fallback PQ Signature (SPHINCS+)**
 | 🟢 MEDIUM
@@ -676,7 +676,7 @@ The svalinn-project spec includes features that are **out of scope** for a conta
 **Fully Applicable:**
 - Crypto algorithms (signatures, hashing, KEM, symmetric, KDF, RNG)
 - Protocol stack (HTTP/3, IPv6)
-- Formal verification (Coq/Isabelle/SPARK/Idris2/ATS2)
+- Formal verification (Coq/Isabelle/SPARK/Idris2)
 
 ---
 

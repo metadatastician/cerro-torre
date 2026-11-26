@@ -187,7 +187,7 @@ The signature format in MVP-PLAN.md needs to be formalized in a spec document.
 
 ### 9.3 Summary.json Schema
 
-Referenced in ATS2 shadow verifier but not specified.
+Referenced in the Idris2 shadow verifier but not specified.
 
 **Create**: `spec/build-summary.md` or add to existing spec
 **Effort**: 2 hours

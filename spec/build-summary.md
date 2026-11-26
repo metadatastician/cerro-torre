@@ -10,7 +10,7 @@ The build summary (`summary.json`) is a hash-stable, post-parse artifact generat
 
 1. **Signing target** — The canonical representation that gets signed
 2. **Provenance anchor** — Links manifest to build outputs with cryptographic hashes
-3. **Verification target** — What the ATS2 shadow verifier checks against
+3. **Verification target** — What the Idris2 shadow verifier checks against
 
 ## Relationship to .ctp Manifests
 
@@ -116,9 +116,9 @@ The `outputs.artifacts` array is populated with actual hashes:
 
 ## Verification
 
-### ATS2 Shadow Verifier
+### Idris2 Shadow Verifier
 
-The non-authoritative ATS2 shadow verifier (`tools/ats-shadow/`) can check:
+The non-authoritative Idris2 shadow verifier (`tools/ct-shadow/`) can check:
 
 ```bash
 # Check digest coupling

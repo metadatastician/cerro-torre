@@ -305,7 +305,7 @@ Per `spec/manifest-canonicalization.adoc`:
 Test runner compares Ada output against golden files.
 
 **Shadow Verifier** (non-authoritative):
-- ATS2 at `tools/ats-shadow/` cross-checks canonicalization
+- Idris2 at `tools/ct-shadow/` cross-checks canonicalization
 - Checks: LF-only, no TAB, no trailing whitespace, key ordering
 - CI runs but `allow_failure: true`
 
@@ -356,8 +356,8 @@ test:
 shadow-verify:
   stage: shadow
   script:
-    - patscc -O2 -DATS_MEMALLOC_LIBC -o ct-shadow tools/ats-shadow/main.dats
-    - ./ct-shadow --check-all tests/canon/
+    - (cd tools/ct-shadow && idris2 --build ct-shadow.ipkg)
+    - tools/ct-shadow/build/exec/ct-shadow --self-test
   allow_failure: true
 
 integration:

@@ -151,7 +151,7 @@ Given a parsed and validated AST:
    * string emission rules (section 9)
 5. Output the resulting bytes as the canonical manifest.
 
-== 13. Shadow-Check Interface (ATS-Applicable)
+== 13. Shadow-Check Interface
 
 A conforming implementation SHOULD provide:
 
@@ -162,7 +162,7 @@ A conforming implementation SHOULD provide:
   ** digest_value (over canonical bytes)
   ** a bounded, schema-validated summary of key fields used for attestation subjects
 
-ATS shadow checking MAY verify:
+Shadow checking (tools/ct-shadow) MAY verify:
 
 * canonical bytes conform to sections 3, 5, 6.1, 7, 8, 9.1-9.2
 * digest matches section 10

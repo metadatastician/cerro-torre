@@ -162,7 +162,7 @@ evidence/2025-12-30/
 
 | D1. Canonicalization rules
 | Strong
-| Spec complete, ATS shadow exists, vectors missing
+| Spec complete, Idris2 shadow exists, vectors missing
 
 | D2. Turing-incomplete
 | Strong
@@ -218,7 +218,7 @@ evidence/2025-12-30/
 * Schema completeness is high — `policy-schema.json`, `index-schema.json`, `crypto-suites.json`, `keystore-policy.schema.json` all exist and are comprehensive.
 * CLI scaffold is thorough with detailed help text for all 17+ commands.
 * The gap between "specified" and "implemented" is the primary issue.
-* ATS2 shadow verifier exists (`tools/ats-shadow/`) but is non-authoritative.
+* Idris2 shadow verifier exists (`tools/ct-shadow/`) but is non-authoritative.
 * Next evaluation should be after implementing pack/verify and creating test vectors.
 
 ---

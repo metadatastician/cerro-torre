@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
-= ATS Shadow Verification Policy
+= Shadow Verification Policy (formerly "ATS")
 :status: normative
 :audience: maintainers, CI authors
 
 == Purpose
 
-ATS may be used as a *shadow verification tool* to reinforce confidence in the canonical implementation.
+Shadow verification tooling (the Idris2 tools under `tools/ct-shadow/` and `verification/idris/`; formerly ATS2) may be used as a *shadow verification tool* to reinforce confidence in the canonical implementation.
 
-ATS is not part of the trusted computing base.
+Shadow tooling is not part of the trusted computing base.
 
 == Authority
 
-* ATS output is advisory only.
-* ATS MUST NOT declare artifacts valid or invalid.
-* ATS MUST NOT generate canonical outputs.
-* ATS MUST NOT be required at runtime.
+* Shadow output is advisory only.
+* Shadow tooling MUST NOT declare artifacts valid or invalid.
+* Shadow tooling MUST NOT generate canonical outputs.
+* Shadow tooling MUST NOT be required at runtime.
 
 == Allowed Uses
 
-ATS MAY be used to:
+Shadow tooling MAY be used to:
 
 * Check canonicalization idempotence
 * Validate semantic equivalence over a declared subset
@@ -27,7 +27,7 @@ ATS MAY be used to:
 
 == Prohibited Uses
 
-ATS MUST NOT:
+Shadow tooling MUST NOT:
 
 * Override SPARK behavior
 * Block production builds
@@ -36,7 +36,7 @@ ATS MUST NOT:
 
 == Failure Handling
 
-If ATS disagrees with the SPARK core:
+If shadow tooling disagrees with the SPARK core:
 
 * CI MAY fail
 * Human review is REQUIRED
@@ -44,4 +44,4 @@ If ATS disagrees with the SPARK core:
 
 == Survivability Requirement
 
-The system MUST function correctly if ATS tooling is removed entirely.
+The system MUST function correctly if shadow tooling is removed entirely.

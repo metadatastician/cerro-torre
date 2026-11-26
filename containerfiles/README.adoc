@@ -10,7 +10,7 @@
 **Looking for research (R-) or extreme (X-) builds?** See directories:
 
 * `containerfiles-research/` - Idris2 dependent type verification (experimental proofs)
-* `containerfiles-extreme/` - ATS2 linear type verification (high-security compliance)
+* `containerfiles-extreme/` - Idris2 linear-type shadow verification (high-security compliance)
 
 **These standard variants are production-ready** and recommended for 95% of users.
 ====
@@ -447,7 +447,7 @@ Cerro Torre offers **9 total variants** (3 verification levels × 3 feature sets
 
 [cols="1,1,1,1",options="header"]
 |===
-| Feature Set | Standard (SPARK) | Research (Idris2+SPARK) | eXtreme (ATS2+SPARK)
+| Feature Set | Standard (SPARK) | Research (Idris2+SPARK) | eXtreme (Idris2 shadow+SPARK)
 
 | Infrastructure (-i)
 | **ct-i** (this directory)
@@ -469,7 +469,7 @@ Cerro Torre offers **9 total variants** (3 verification levels × 3 feature sets
 
 * **Standard** (this directory): Ada/SPARK proofs only - production-ready, recommended for 95% of users
 * **Research** (`containerfiles-research/`): Adds Idris2 dependent type proofs - for academic research
-* **eXtreme** (`containerfiles-extreme/`): Adds ATS2 linear type proofs - for military/financial compliance
+* **eXtreme** (`containerfiles-extreme/`): Adds an Idris2 linear-type shadow model - for military/financial compliance
 
 **Feature sets:**
 

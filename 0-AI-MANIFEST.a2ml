@@ -25,7 +25,7 @@
 | `.machine_readable/`        | STATE.scm, META.scm, ECOSYSTEM.scm (ONLY here)    |
 | `containerfiles/`           | Standard container image variants                  |
 | `containerfiles-research/`  | Research variants (Idris2 + SPARK)                 |
-| `containerfiles-extreme/`   | Extreme variants (ATS2 + SPARK)                    |
+| `containerfiles-extreme/`   | Extreme variants (Idris2 shadow + SPARK)                 |
 | `spec/`                     | Manifest format specification                      |
 | `governance/`               | Cooperative governance documents                   |
 | `keys/`                     | Public keys for verification                       |

@@ -11,14 +11,14 @@ X- variants are for **high-security environments** (military, financial, classif
 
 == What Are X- Variants?
 
-eXtreme security builds include **ATS2 linear type verification** in addition to Ada/SPARK proofs.
+eXtreme security builds include **Idris2 linear-type shadow verification** in addition to Ada/SPARK proofs.
 
 [cols="1,3",options="header"]
 |===
 | Variant | Purpose
 
 | X-ct-i
-| eXtreme infrastructure with ATS2 shadow verifier
+| eXtreme infrastructure with Idris2 shadow verifier
 
 | X-ct-a
 | eXtreme attestation with linear crypto proofs
@@ -35,7 +35,7 @@ eXtreme security builds include **ATS2 linear type verification** in addition to
 * You're building financial transaction systems
 * You need formal memory safety guarantees beyond SPARK
 * You require linear type proofs (use-once resources)
-* Your compliance requires ATS2 verification
+* Your compliance requires linear-type shadow verification
 * You understand what "linear types" means
 
 ❌ **Do NOT use X- variants if:**
@@ -43,7 +43,7 @@ eXtreme security builds include **ATS2 linear type verification** in addition to
 * You just want "the most secure build" (use standard ct-a or ct)
 * You think "extreme" means "extra features" (it doesn't - see below)
 * You're building typical web applications (use standard variants)
-* You don't know what ATS2 is
+* You don't know what a linear-type shadow model is
 * You just think it sounds impressive
 
 == X- is NOT Alpha/Beta
@@ -59,7 +59,7 @@ X- code is ultra-stable. The verification is *stronger*, not experimental.
 
 [cols="1,1,1,1,1",options="header"]
 |===
-| Variant | Ada/SPARK | Idris2 | ATS2 | Shadow Verifier
+| Variant | Ada/SPARK | Idris2 | Idris2 linear shadow | Shadow Verifier
 
 | Standard (ct-*)
 | ✅
@@ -80,7 +80,7 @@ X- code is ultra-stable. The verification is *stronger*, not experimental.
 | ✅
 |===
 
-**Shadow Verifier:** ATS2-compiled secondary verifier that runs in parallel to catch Ada/SPARK proof gaps.
+**Shadow Verifier:** the `ct-shadow` checker (`tools/ct-shadow/`, Idris2) checks canonical manifest bytes. The linear-type model in `verification/idris/` (`LinearCrypto`, `LinearSignature`, `LinearImporter`, `ShadowVerifier`) is a typed model, not real crypto. It is typechecked at image build time and is not shipped as a binary.
 
 == Performance Impact
 
@@ -107,25 +107,26 @@ For most operations, the overhead is negligible.
 
 == Build Time
 
-Expect **4-5× longer build times** due to ATS2 verification:
+Expect **4-5× longer build times** due to the extra Idris2 verification:
 
 * ct-i: ~5 minutes
-* X-ct-i: ~20-25 minutes (includes ATS2 linear type checking)
+* X-ct-i: ~20-25 minutes (includes Idris2 linear type checking)
 
 == Shadow Verifier
 
-X- variants include `ct-shadow`, an ATS2-compiled shadow verifier:
+X- variants include `ct-shadow`, an Idris2-built checker for canonical manifest bytes:
 
 [source,bash]
 ----
-# Main operation with shadow verification
+# Main operation
 ct pack nginx:latest -o nginx.ctp
 
-# Manual shadow verification
-ct-shadow --verify nginx.ctp
+# Check canonical bytes, digest and idempotence
+ct-shadow --summary summary.json --check-digest canonical.ctp
+ct-shadow --self-test
 ----
 
-The shadow verifier runs automatically for all operations.
+`ct` does not call `ct-shadow` itself. Run it from CI or by hand.
 
 ## Compliance Use Cases
 
@@ -208,7 +209,7 @@ X- variants have higher operational costs:
 
 | Maintenance
 | Easy
-| Requires ATS2 expertise
+| Requires Idris2 expertise
 |===
 
 Only use X- variants when compliance or security requirements justify the cost.

@@ -16,8 +16,8 @@ project Cerro_Torre is
    type Feature_Set_Type is ("infrastructure", "attestation", "complete");
    Feature_Set : Feature_Set_Type := external ("CERRO_FEATURES", "complete");
 
-   --  Verification level: spark, idris2, or ats2
-   type Verification_Type is ("spark", "idris2", "ats2");
+   --  Verification level: spark, idris2, or idris2-shadow (linear shadow model)
+   type Verification_Type is ("spark", "idris2", "idris2-shadow");
    Verification : Verification_Type := external ("CERRO_VERIFICATION", "spark");
 
    --  Source directories based on feature set
@@ -85,8 +85,8 @@ project Cerro_Torre is
             Verification_Switches := ("-gnateDVERIFICATION_SPARK");
          when "idris2" =>
             Verification_Switches := ("-gnateDVERIFICATION_IDRIS2", "-gnateDVERIFICATION_SPARK");
-         when "ats2" =>
-            Verification_Switches := ("-gnateDVERIFICATION_ATS2", "-gnateDVERIFICATION_SPARK");
+         when "idris2-shadow" =>
+            Verification_Switches := ("-gnateDVERIFICATION_IDRIS2_SHADOW", "-gnateDVERIFICATION_SPARK");
       end case;
 
       --  Feature set defines
