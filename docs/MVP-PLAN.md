@@ -358,6 +358,7 @@ shadow-verify:
   script:
     - (cd tools/ct-shadow && idris2 --build ct-shadow.ipkg)
     - tools/ct-shadow/build/exec/ct-shadow --self-test
+    # Runs the built-in self-test only. It does not read tests/canon/.
   allow_failure: true
 
 integration:

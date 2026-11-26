@@ -79,13 +79,13 @@ bundleGetHash : (1 _ : Arena) -> (1 _ : Bundle) -> Both Arena (Both Bundle Bytes
 bundleGetHash h (MkBundle hs ss) =
   let B h hash = bytes32Create h hs in B h (B (MkBundle hs ss) hash)
 
-public export
+private
 toSigList : List (Vect 64 Bits8) -> SigList
 toSigList [] = []
 toSigList (s :: ss) = MkSig s :: toSigList ss
 
 ||| Extract the signatures (bundle handed back).
-public export
+export
 bundleGetSignatures : (1 _ : Bundle) -> Both Bundle SigList
 bundleGetSignatures (MkBundle hs ss) = B (MkBundle hs ss) (toSigList ss)
 

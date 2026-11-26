@@ -121,7 +121,7 @@ X- variants include `ct-shadow`, an Idris2-built checker for canonical manifest 
 # Main operation
 ct pack nginx:latest -o nginx.ctp
 
-# Check canonical bytes, digest and idempotence
+# Check canonical bytes and digest
 ct-shadow --summary summary.json --check-digest canonical.ctp
 ct-shadow --self-test
 ----

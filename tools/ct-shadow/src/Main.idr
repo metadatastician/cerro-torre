@@ -61,7 +61,9 @@ runCapture cmd = do
   Right h <- popen cmd Read
     | Left err => die ("cannot run command: " ++ show err)
   out <- readPipe h
-  _ <- pclose h
+  status <- pclose h
+  when (status /= 0) $
+    die ("command failed (status " ++ show status ++ "): " ++ cmd)
   pure out
 
 record Options where
@@ -160,12 +162,17 @@ main = do
   when o.checkDigest $ do
     when (o.summary == "") $ die "--check-digest requires --summary <file.json>"
     js <- readAll o.summary
-    case extractJsonStringField js "digest_algorithm" of
-      Nothing => die "summary.json missing digest_algorithm"
-      Just alg => when (alg /= "sha256") $
-        die ("unsupported digest_algorithm (expected sha256): " ++ alg)
-    case extractJsonStringField js "digest_value" of
-      Nothing => die "summary.json missing digest_value"
+    -- Documented field: manifest.canonical_bytes_sha256 (SHA-256 implied).
+    expectedDigest <- case extractJsonStringField js "canonical_bytes_sha256" of
+      Just d => pure (Just d)
+      Nothing => case extractJsonStringField js "digest_algorithm" of
+        Nothing => pure Nothing
+        Just alg => do
+          when (alg /= "sha256") $
+            die ("unsupported digest_algorithm (expected sha256): " ++ alg)
+          pure (extractJsonStringField js "digest_value")
+    case expectedDigest of
+      Nothing => die "summary.json missing manifest.canonical_bytes_sha256"
       Just expected => do
         out <- runCapture ("sha256sum " ++ shellQuote o.path ++ " 2>/dev/null")
         let got = firstWord out

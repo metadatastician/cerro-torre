@@ -59,7 +59,7 @@ run *args:
 
 # Build the Idris2 shadow verifier (tools/ct-shadow)
 shadow-build:
-     command -v idris2 &> /dev/null; then \
+    if command -v idris2 &> /dev/null; then \
         (cd tools/ct-shadow && idris2 --build ct-shadow.ipkg) && \
         echo "built tools/ct-shadow/build/exec/ct-shadow"; \
     else \
