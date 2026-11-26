@@ -223,13 +223,13 @@
 **Estimated Effort:** 12-16 hours
 **Blocking:** v1.0 release
 
-### 5.2 ATS2 Shadow Verifier (NON-CRITICAL)
-**Current:** Source exists, patscc not installed
-**Gap:** Build not tested
+### 5.2 Idris2 Shadow Verifier (NON-CRITICAL)
+**Current:** Ported from ATS2 to Idris2 (`tools/ct-shadow/`); builds with Idris2 0.7.0 and passes `--self-test`
+**Gap:** Not yet run against real canonical.ctp files or CI
 
 **TODO Items:**
-- [ ] Install ATS2 compiler (patscc)
-- [ ] Build ct-shadow binary
+- [x] Port from ATS2 to Idris2
+- [x] Build ct-shadow binary (`just shadow-build`)
 - [ ] Test against canonical.ctp files
 - [ ] Add to CI pipeline (allow_failure: true)
 

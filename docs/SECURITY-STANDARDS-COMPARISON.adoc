@@ -94,7 +94,7 @@ Cerro Torre has implemented classical crypto (Ed25519, SHA-256, BLAKE3) but is m
 | **Formal Verification**
 | Coq/Isabelle for crypto primitives
 | ✅ *Implemented*
-| Ada/SPARK formal verification in `cerro_crypto.ads`. Idris2/ATS2 in R-/X- variants.
+| Ada/SPARK formal verification in `cerro_crypto.ads`. Idris2 in R-/X- variants (X- adds a linear-type shadow model).
 
 |===
 

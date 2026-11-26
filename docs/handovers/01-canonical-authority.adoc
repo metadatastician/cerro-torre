@@ -11,7 +11,7 @@ The Cerro Torre project defines correctness and trust using:
 * A single authoritative implementation in Ada/SPARK
 * Executable golden test corpora
 
-Advanced proof tooling (including ATS) is permitted only as *non-authoritative reinforcement*.
+Advanced proof tooling (including the Idris2 shadow tools, formerly ATS2) is permitted only as *non-authoritative reinforcement*.
 
 == Canonical Source of Truth
 

@@ -13,17 +13,17 @@ This document records decisions taken to satisfy Phase-0 MUST requirements.
 * Audit audience: auditors, lawyers, distro maintainers, future maintainers
 * Failure tolerance: system must continue unchanged without advanced proof tooling
 * Semantic authority: spec + goldens
-* ATS role: advisory only
+* Shadow tooling role (formerly ATS2, now Idris2): advisory only
 * Disagreement handling: human review
-* Runtime dependency on ATS: none
-* Governance visibility of ATS: optional tooling only
+* Runtime dependency on shadow tooling: none
+* Governance visibility of shadow tooling: optional tooling only
 * Contributor scarcity tolerance: moderate
 * Survivability requirement: mandatory
 
 == Architectural Outcome
 
 * Ada/SPARK is the canonical core
-* ATS is a non-authoritative satellite
+* Shadow tooling is a non-authoritative satellite
 * Written spec and golden corpora define meaning
 * Tooling reinforces but does not define trust
 

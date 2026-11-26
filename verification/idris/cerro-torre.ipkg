@@ -3,7 +3,11 @@ package cerro-torre
 modules = CryptoFFI
         , CryptoProofs
         , ImporterProofs
+        , LinearCrypto
+        , LinearImporter
+        , LinearSignature
         , Proofs
+        , ShadowVerifier
         , SignatureProofs
         , StringLemmas
         , Theorems

@@ -1,0 +1,15 @@
+package ct-shadow
+
+version = 0.1.0
+authors = "Cerro Torre"
+brief = "Non-authoritative shadow checks for canonical CTP bytes (Idris2)"
+
+sourcedir = "src"
+
+modules = Argon2Checks
+        , Argon2Tests
+        , CanonChecks
+        , CanonTests
+
+main = Main
+executable = "ct-shadow"

@@ -101,3 +101,5 @@ deps/
 # before compiling a single line.
 /build/
 dist/
+/tools/ct-shadow/build/
+verification/idris/build/

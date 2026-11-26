@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Shadow Verifier (Non-authoritative, Idris2)
+:status: draft
+:audience: maintainers, CI
+
+== Purpose
+
+This tool provides non-authoritative checks over canonical manifest bytes produced by the SPARK core.
+
+It MUST NOT be required for runtime correctness.
+It MAY be used in CI to detect drift or implementation bugs.
+
+== What it checks (default)
+
+* LF-only line endings (no CR)
+* file ends with exactly one LF
+* no TAB characters
+* no trailing whitespace at end of lines
+* best-effort key ordering at the same indentation level for lines that look like `key: ...`
+
+== Optional checks
+
+* Digest coupling: compares sha256 of canonical bytes to digest found in summary.json
+  Requires `sha256sum` on PATH.
+
+* Idempotence: runs an external canonicalizer and compares bytes.
+  Requires a command like: `ct canonicalize <file>`.
+
+== Usage
+
+Build (needs Idris2 0.7.0 or later; `just shadow-build` from the repo root does the same):
+
+  idris2 --build ct-shadow.ipkg
+
+The binary is `build/exec/ct-shadow`. Self-test (no input file needed):
+
+  build/exec/ct-shadow --self-test
+
+Run:
+
+  build/exec/ct-shadow canonical.ctp
+
+With digest check:
+
+  build/exec/ct-shadow --summary summary.json --check-digest canonical.ctp
+
+With idempotence check:
+
+  build/exec/ct-shadow --canon-cmd "ct canonicalize" --check-idempotence canonical.ctp
+
+Exit code:
+* 0 pass
+* 1 fail
+
+== Design Rationale
+
+This verifier is intentionally:
+
+* **Non-authoritative**: The SPARK core is the source of truth. This tool detects drift.
+* **Minimal**: about 500 lines of Idris2 with tests, using only `base` (plus `sha256sum` and a shell for the optional checks).
+* **Safe to remove**: If Idris2 tooling becomes unavailable, delete this directory.
+
+The language choice (Idris2) provides:
+
+* Dependent types, with some checks proved at compile time (see `src/Argon2Tests.idr`)
+* Total functions by default
+* Different implementation = different bugs (diversity)
+
+It was ported from ATS2, which the estate language policy bans. Behaviour is the same, with these deliberate differences: file paths are shell-quoted for `sha256sum` and the canonicalizer, a missing option value is a clear error, and `--self-test` is new.
+
+== Argon2 parameter checks
+
+`src/Argon2Checks.idr` holds the keystore Argon2id range and upgrade checks, ported from `argon2-checks.dats`. The two opaque types `ArtifactDigest` and `PasswordVerifier` have hidden constructors, so one cannot be built from the other outside that module.
+
+== CI Integration
+
+[source,yaml]
+----
+shadow-verify:
+  stage: test
+  script:
+    - (cd tools/ct-shadow && idris2 --build ct-shadow.ipkg)
+    - ./tools/ct-shadow/build/exec/ct-shadow --self-test
+    - ./tools/ct-shadow/build/exec/ct-shadow --summary dist/summary.json --check-digest dist/canonical.ctp
+    - ./tools/ct-shadow/build/exec/ct-shadow --canon-cmd "cerro canonicalize" --check-idempotence dist/canonical.ctp
+  allow_failure: true  # Non-authoritative
+----
+
+== Summary.json Schema
+
+The `summary.json` format is defined in `spec/summary-schema.json` (JSON Schema draft 2020-12).
+
+Key fields used by this tool:
+
+* `manifest.canonical_bytes_sha256` — SHA-256 of canonicalized .ctp bytes (for `--check-digest`)
+
+See `manifests/examples/ct-minbase.summary.json` for a complete example.
+
+== Maintenance
+
+If key ordering rules change, update `isKeyChar` and `parseKeyColon` in `src/CanonChecks.idr`.
+If summary.json schema changes, update the `extractJsonStringField` calls in `src/Main.idr`.
