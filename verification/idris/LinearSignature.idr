@@ -167,37 +167,47 @@ public export
 data Stage = SBuilt | SSigned | SCountersigned | SVerified
 
 ||| Pipeline state indexed by stage; transitions only exist in order.
-public export
+export
 data Pipeline : Stage -> Type where
   Built         : Pipeline SBuilt
   Signed        : (1 _ : Chain 1) -> Pipeline SSigned
   Countersigned : (1 _ : Chain 2) -> Pipeline SCountersigned
   Verified      : Bool -> Pipeline SVerified
 
-public export
+||| The only way to start a pipeline.
+export
+pipelineStart : Pipeline SBuilt
+pipelineStart = Built
+
+||| Final result accessor.
+export
+pipelineResult : Pipeline SVerified -> Bool
+pipelineResult (Verified r) = r
+
+export
 pipelineSign : (1 _ : Pipeline SBuilt) -> (1 pk : Bytes32) -> (1 sig : Bytes64)
             -> Pipeline SSigned
 pipelineSign Built pk sig = Signed (chainCons pk sig chainEmpty)
 
-public export
+export
 pipelineCountersign : (1 _ : Pipeline SSigned) -> (1 pk : Bytes32) -> (1 sig : Bytes64)
                    -> Pipeline SCountersigned
 pipelineCountersign (Signed chain) pk sig = Countersigned (chainCons pk sig chain)
 
-public export
+export
 pipelineVerify : (1 _ : Arena) -> (1 _ : Pipeline SCountersigned) -> (1 msg : Bytes32)
               -> Both (Pipeline SVerified) (Both Arena Bytes32)
 pipelineVerify h (Countersigned chain) msg =
   let (r # rest) = chainVerifyAll h chain msg
   in B (Verified r) rest
 
-public export
+export
 completePipeline : (1 _ : Arena) -> (1 msg : Bytes32)
                 -> (1 pk1 : Bytes32) -> (1 sig1 : Bytes64)
                 -> (1 pk2 : Bytes32) -> (1 sig2 : Bytes64)
                 -> Res Bool (const (Both Arena Bytes32))
 completePipeline h msg pk1 sig1 pk2 sig2 =
-  let s1 = pipelineSign Built pk1 sig1
+  let s1 = pipelineSign pipelineStart pk1 sig1
       s2 = pipelineCountersign s1 pk2 sig2
       B (Verified r) rest = pipelineVerify h s2 msg
   in r # rest
